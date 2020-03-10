@@ -1,0 +1,27 @@
+{
+    "name": "Totem Library",
+    "version": "1.0.0",
+    "description": "Library to connect and control Totem products. Provides all required functionality to find Totem robots, control connection and interact with Totem modules",
+    "keywords": "totem, totemmaker, esp32, robot, X4, X3-FBI",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/totemmaker/TotemArduino.git"
+    },
+    "authors": [
+        {
+            "name": "TotemMaker",
+            "email": "info@totemmaker.net",
+            "url": "https://totemmaker.net/contacts",
+            "maintainer": true
+        }
+    ],
+    "license": "LGPL-3.0-or-later",
+    "homepage": "https://totemmaker.net",
+    "frameworks": "arduino",
+    "platforms": [
+        "espressif32"
+    ],
+    "build": {
+        "flags": "-L\"$PROJECT_CORE_DIR\\lib\\Totem Library\\src\\esp32\" -lTotemX4"
+    }
+}

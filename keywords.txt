@@ -1,0 +1,80 @@
+#######################################
+# Syntax Coloring Map For Totem Library
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Totem		KEYWORD1
+TotemModule	KEYWORD1
+ModuleData	KEYWORD1
+MotorDriver	KEYWORD1
+TotemVirtual	KEYWORD1
+TotemRobot	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+# ModuleData
+is	KEYWORD2
+isInt	KEYWORD2
+isString	KEYWORD2
+getData	KEYWORD2
+getCmdHash	KEYWORD2
+# MotorDriver
+setTurnIntensity	KEYWORD2
+addFrontLeft	KEYWORD2
+addFrontRight	KEYWORD2
+addRearLeft	KEYWORD2
+addRearRight	KEYWORD2
+addServo	KEYWORD2
+moveServo	KEYWORD2
+brakeAll	KEYWORD2
+brakeRear	KEYWORD2
+brakeFront	KEYWORD2
+setModule	KEYWORD2
+getModule	KEYWORD2
+# TotemModule
+writeWait	KEYWORD2
+readWait	KEYWORD2
+subscribe	KEYWORD2
+subscribeWait	KEYWORD2
+unsubscribe	KEYWORD2
+unsubscribeWait	KEYWORD2
+attachOnData	KEYWORD2
+setNumber	KEYWORD2
+setSerial	KEYWORD2
+hashCmd	KEYWORD2
+hashModel	KEYWORD2
+# TotemRobot
+getName	KEYWORD2
+getAddress	KEYWORD2
+getModel	KEYWORD2
+getColor	KEYWORD2
+getNumber	KEYWORD2
+isConnected	KEYWORD2
+# Interface BLE
+findRobot	KEYWORD2
+findRobotNoBlock	KEYWORD2
+isFinding	KEYWORD2
+stopFind	KEYWORD2
+attachOnConnect	KEYWORD2
+getConnectedCount	KEYWORD2
+getConnectedLast	KEYWORD2
+getConnectedList	KEYWORD2
+# Interface X4
+beginNoBluetooth	KEYWORD2
+
+
+#######################################
+# Instances (KEYWORD2)
+#######################################
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+BLE	LITERAL1
+X4	LITERAL1
