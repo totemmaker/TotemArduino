@@ -135,14 +135,14 @@ public:
         frame.data.setValue(string);
         return frame;
     }
-    static Frame respondStatus(uint32_t command, bool success, int32_t status = 0) {
+    static Frame respondStatus(uint32_t command, bool success, int32_t error = 0) {
         Frame frame;
         frame.isRequest = false;
         frame.data.setByte((uint8_t)(success ?
         MessageType::ResponseOk : MessageType::ResponseFail));
         frame.data.setCommand(command);
-        if (status != 0)
-            frame.data.setValue(status);
+        if (error != 0)
+            frame.data.setValue(error);
         return frame;
     }
     TotemBUSProtocol::Result processCAN(uint32_t id, uint8_t *data, uint8_t len) {
