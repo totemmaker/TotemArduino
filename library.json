@@ -1,6 +1,6 @@
 {
     "name": "Totem Library",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Library to connect and control Totem products. Provides all required functionality to find Totem robots, control connection and interact with Totem modules",
     "keywords": "totem, totemmaker, esp32, robot, X4, X3-FBI",
     "repository": {
