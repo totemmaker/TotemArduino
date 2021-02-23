@@ -9,14 +9,12 @@ namespace TotemLib {
 
 class TotemX4 {
 public:
-    using CallbackFrame = void (*)(void *context, TotemBUS::Frame &frame, bool broadcast);
-    using CallbackCAN = void (*)(void *context, uint32_t id, uint8_t *data, uint8_t len);
+    using CallbackMessage = void (*)(void *context, TotemBUS::Message &message);
     
-    static bool init(void *context, CallbackFrame frameClbk, CallbackCAN canClbk);
-    static bool initBLE();
-    static void sendCAN(uint32_t id, uint8_t *data, uint8_t len);
-    static bool processX4Message(TotemBUS::Message message);
-    static bool processX4Frame(TotemBUS::Frame &frame);
+    static bool init(void *context, CallbackMessage messageClbk);
+    static bool startBLE();
+    static bool sendFrame(TotemBUS::Frame &frame, int number, int serial);
+    
     static int getNumber();
     static int getSerial();
 };

@@ -19,13 +19,12 @@
 #ifndef LIB_TOTEM_SRC_INTERFACES_BLE_REMOTEROBOT
 #define LIB_TOTEM_SRC_INTERFACES_BLE_REMOTEROBOT
 
-#include "lib/TotemNetwork.h"
-#include "lib/ModuleList.h"
+#include "TotemBLENetwork.h"
 #include "TotemCANService.h"
 
 namespace TotemLib {
 
-class RemoteRobot : public TotemNetwork, protected TotemCANServiceReceiver {
+class RemoteRobot : public TotemBLENetwork, protected TotemCANServiceReceiver {
 public:
     BLEClient *client;
     TotemCANService canService;
