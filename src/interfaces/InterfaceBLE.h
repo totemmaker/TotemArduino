@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>
  */
-#ifndef LIB_TOTEM_SRC_INTERFACES_BLEINTERFACE
-#define LIB_TOTEM_SRC_INTERFACES_BLEINTERFACE
+#ifndef LIB_TOTEM_SRC_INTERFACES_INTERFACEBLE
+#define LIB_TOTEM_SRC_INTERFACES_INTERFACEBLE
 
 #include <BLEDevice.h>
 #include <BLEUtils.h>
@@ -31,7 +31,7 @@ using RobotReceiver = void (*)(TotemRobot robot);
 
 namespace TotemLib {
 
-class BLEInterface : BLEAdvertisedDeviceCallbacks, BLEClientCallbacks {
+class InterfaceBLE : BLEAdvertisedDeviceCallbacks, BLEClientCallbacks {
     BLEUUID advertisingService = std::string("bae50001-a471-446a-bc43-4b0a60512636");
     BLEScan *scanner = nullptr;
     bool scanActive = false;
@@ -44,10 +44,10 @@ class BLEInterface : BLEAdvertisedDeviceCallbacks, BLEClientCallbacks {
     TotemRobotInfo *lastConnectedRobot = nullptr;
     QueueHandle_t connectQueue = nullptr;
 public:
-    BLEInterface() {
+    InterfaceBLE() {
         this->lastConnectedRobot = getFreeRobot();
     }
-    ~BLEInterface() {
+    ~InterfaceBLE() {
         for (auto robot : robotsList)
             delete robot;
     }
@@ -82,7 +82,7 @@ public:
         this->foundReceiver = receiver;
         this->mainTask = true;
         if (receiver) {
-            FreeRTOS::startTask(BLEInterface::connect_task, "connect_task", this, 3072);
+            FreeRTOS::startTask(InterfaceBLE::connect_task, "connect_task", this, 3072);
         }
         scan_task(this);
         return TotemRobot(this->lastConnectedRobot);
@@ -107,7 +107,7 @@ public:
         this->foundReceiver = receiver;
         this->mainTask = false;
         if (receiver) {
-            FreeRTOS::startTask(BLEInterface::connect_task, "connect_task", this, 3072);
+            FreeRTOS::startTask(InterfaceBLE::connect_task, "connect_task", this, 3072);
         }
         startScan();
     }
@@ -161,7 +161,7 @@ private:
     void startScan(bool continueScan = false) {
         if (!scanActive) {
             scanActive = true;
-            FreeRTOS::startTask(BLEInterface::scan_task, "scan_task", this, 3072);
+            FreeRTOS::startTask(InterfaceBLE::scan_task, "scan_task", this, 3072);
         }
     }
     void stopScan() {
@@ -180,7 +180,7 @@ private:
         return robot;
     }
     static void scan_task(void *context) {
-        BLEInterface *inst = static_cast<BLEInterface*>(context);
+        InterfaceBLE *inst = static_cast<InterfaceBLE*>(context);
         // Set scan status to active
         inst->scanActive = true;
         // Start BLE scan. This will block task
@@ -212,7 +212,7 @@ private:
         }
     }
     static void connect_task(void *context) {
-        BLEInterface *inst = static_cast<BLEInterface*>(context);
+        InterfaceBLE *inst = static_cast<InterfaceBLE*>(context);
         // Create queue
         inst->connectQueue = xQueueCreate(5, sizeof(BLEAdvertisedDevice*));
         assert(inst->connectQueue);
@@ -271,4 +271,4 @@ private:
 
 } // namespace TotemLib
 
-#endif /* LIB_TOTEM_SRC_INTERFACES_BLEINTERFACE */
+#endif /* LIB_TOTEM_SRC_INTERFACES_INTERFACEBLE */
