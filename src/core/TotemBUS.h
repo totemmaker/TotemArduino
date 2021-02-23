@@ -53,7 +53,7 @@ public:
         bool responseReq = false;
     };
     using CallbackCANSend = bool (*)(void *context, TotemBUSProtocol::CanPacket &packet);
-    using CallbackMessageReceive = void (*)(void *context, TotemBUS::Message message);
+    using CallbackMessageReceive = bool (*)(void *context, TotemBUS::Message message);
     struct Frame {
         TotemBUSProtocol::Data data;
         bool isRequest = true;
@@ -67,10 +67,39 @@ public:
         Frame() {} 
         friend class TotemBUS;
     };
+private:
     TotemBUS(void *context, CallbackCANSend canSender, CallbackMessageReceive messageReceiver) : 
     callbackContext(context),
     callbackCAN(canSender),
     callbackMessage(messageReceiver)
+    { }
+public:
+    template <int readersCount, int readerBufferSize>
+    struct Memory {
+        static_assert(readerBufferSize <= 0xFFFF, "Reader size larger than 0xFFFF is not supported by protocol");
+        static_assert(readersCount < 20, "Too many readers. Missmached parameters?");
+        uint8_t buffer[readersCount][readerBufferSize];
+        TotemBUSProtocol::Reader reader[readersCount];
+        Memory() {
+            for (int i=0; i<readersCount; i++) {
+                reader[i].assignBuffer(buffer[i], readerBufferSize);
+            }
+        }
+    };
+    struct MemoryContainer {
+        TotemBUSProtocol::Reader *readerPtr = nullptr;
+        size_t readerCnt = 0;
+        MemoryContainer() { }
+        template <int readersCount, int readerBufferSize>
+        MemoryContainer(Memory<readersCount, readerBufferSize> &memory) :
+        readerPtr(memory.reader),
+        readerCnt(readersCount) { }
+    };
+    TotemBUS(MemoryContainer *memory, void *context, CallbackCANSend canSender, CallbackMessageReceive messageReceiver) : 
+    TotemBUS(context, canSender, messageReceiver)
+    { if (memory) setMemory(*memory); }
+    TotemBUS(MemoryContainer memory, void *context, CallbackCANSend canSender, CallbackMessageReceive messageReceiver) : 
+    TotemBUS(&memory, context, canSender, messageReceiver)
     { }
     static Frame write(uint32_t command, bool responseReq = false) {
         Frame frame;
@@ -146,25 +175,25 @@ public:
         return frame;
     }
     TotemBUSProtocol::Result processCAN(uint32_t id, uint8_t *data, uint8_t len) {
-        TotemBUSProtocol::Reader<ReaderBufferSize> *reader = nullptr;
-        for (auto &r : totemBUSReader) {
-            if (r.forModule(id)) {
-                reader = &r;
+        TotemBUSProtocol::Reader *selectedReader = nullptr;
+        for (int i=0; i<readerCount; i++) {
+            if (reader[i].forModule(id)) {
+                selectedReader = &reader[i];
                 break;
             }
-            if (!r.isUsed())
-                reader = &r;
+            if (!reader[i].isUsed())
+                selectedReader = &reader[i];
         }
-        if (reader == nullptr) {
+        if (selectedReader == nullptr) {
             return TotemBUSProtocol::Result::ERROR_BUF_OVERFLOW;
         }
         static uint8_t stackDepth = 0;
-        auto result = reader->processCANPacket(id, data, len);
+        auto result = selectedReader->processCANPacket(id, data, len);
         if (result == TotemBUSProtocol::Result::RECEIVED) {
-            TotemBUSProtocol::Packet packet(reader->getPacketInfo());
-            callbackMessage(callbackContext, encodeTotemBUS(
-                    packet.number(), packet.serial(), packet.isRequest(), packet.isPing(), packet.data()));
-            return TotemBUSProtocol::Result::OK;
+            TotemBUSProtocol::Packet packet(selectedReader->getPacketInfo());
+            return callbackMessage(callbackContext, encodeToMessage(
+                    packet.number(), packet.serial(), packet.isRequest(), packet.isPing(), packet.data()))
+            ? TotemBUSProtocol::Result::OK : TotemBUSProtocol::Result::ERROR_APP;
         }
         else if (result == TotemBUSProtocol::Result::ERROR_EXT_MISSING) {
             if (stackDepth++ > 3) return TotemBUSProtocol::Result::ERROR_EXT_MISSING; 
@@ -176,10 +205,11 @@ public:
         return result;
     }
     void clear() {
-        for (auto &r : totemBUSReader)
-            r.clear();
+        for (int i=0; i<readerCount; i++) {
+            reader[i].clear();
+        }
     }
-    static Message encodeTotemBUS(uint16_t number, uint16_t serial, bool isRequest, bool isPing, TotemBUSProtocol::Data &data) {
+    static Message encodeToMessage(uint16_t number, uint16_t serial, bool isRequest, bool isPing, TotemBUSProtocol::Data &data) {
         Message message;
         message.number = number;
         message.serial = serial;
@@ -219,13 +249,16 @@ public:
         }
         return message;
     }
+    void setMemory(MemoryContainer &memory) {
+        this->reader = memory.readerPtr;
+        this->readerCount = memory.readerCnt;
+    }
 private:
     void * const callbackContext;
     CallbackCANSend const callbackCAN;
     CallbackMessageReceive const callbackMessage;
-    static const uint32_t ReadersCount = 2; 
-    static const uint32_t ReaderBufferSize = 1000;
-    TotemBUSProtocol::Reader<ReaderBufferSize> totemBUSReader[ReadersCount];
+    TotemBUSProtocol::Reader *reader = nullptr;
+    uint8_t readerCount = 0;
     static bool isValid(uint32_t number, uint32_t serial) {
         return (TotemBUSProtocol::Writer::isValidNumber(number)
         && TotemBUSProtocol::Writer::isValidSerial(serial));

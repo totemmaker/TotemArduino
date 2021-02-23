@@ -220,16 +220,16 @@ enum class Result {
     ERROR_DATA_IN_USE,    
     ERROR_COMPOUND,       
     ERROR_BASIC,          
+    ERROR_APP,            
 };
-template <uint32_t bufferSize = 256> 
 class Reader {
-    static_assert(bufferSize <= 0xFFFF, "Reader size larger than 0xFFFF is not supported by protocol");
-    static const uint32_t ExtendedId  = 0x80000000UL;
-    static const uint32_t RTRequest   = 0x40000000UL;
+    static const uint32_t EXT  = 0x80000000UL;
+    static const uint32_t RTR   = 0x40000000UL;
     static const uint32_t TypePkt     = 0x00000600UL;
     static const uint32_t RequestPkt  = 0x00000100UL;
     struct ReadStream {
-        uint8_t buffer[bufferSize];
+        uint8_t *buffer;
+        uint16_t bufferSize;
         uint16_t fill      = 0;
         uint16_t index     = 0;
         bool success  = true;
@@ -248,6 +248,10 @@ class Reader {
     PacketInfo info;
     bool discardExtended = false;
 public:
+    void assignBuffer(uint8_t *buffer, size_t size) {
+        stream.buffer = buffer;
+        stream.bufferSize = size;
+    }
     void clear() {
         stream.reset();
     }
@@ -283,12 +287,11 @@ public:
     PacketInfo& getPacketInfo() {
         return info;
     }
-private:
     static bool isExtendedCAN(uint32_t id) {
-        return (id & ExtendedId) != 0;
+        return (id & EXT) != 0;
     }
     static bool isRTRCAN(uint32_t id) {
-        return (id & RTRequest) != 0;
+        return (id & RTR) != 0;
     }
     static bool isCompoundExt(uint32_t id) {
         return getType(id) == PacketType::CompoundExt;
@@ -303,9 +306,10 @@ private:
         return id & 0x0FF;
     }
     static uint16_t readModuleSerial(uint32_t id) {
-        if ((id & ExtendedId) == 0) return 0;
+        if ((id & EXT) == 0) return 0;
         return ((id & 0x1FFFC000) >> 14);
     }
+private:
     Result process(uint32_t id, uint8_t *data, uint8_t len) {
         if (stream.fill == 0) {
             memcpy(&stream.buffer[stream.fill], data, len);
@@ -331,7 +335,7 @@ private:
         }
         if (stream.fill != 0 && getType(id) != PacketType::CompoundExt)
             return Result::ERROR_EXT_MISSING;
-        if (stream.fill + len > (int)sizeof(stream.buffer))
+        if (stream.fill + len > (int)stream.bufferSize)
             return Result::ERROR_BUF_OVERFLOW;
         memcpy(&stream.buffer[stream.fill], data, len);
         stream.fill += len;
@@ -419,18 +423,18 @@ struct CanPacket {
     uint8_t len;
 };
 struct Writer {
-    static const uint32_t ExtendedId  = 0x80000000UL;
-    static const uint32_t RTRequest   = 0x40000000UL;
+    static const uint32_t EXT  = 0x80000000UL;
+    static const uint32_t RTR   = 0x40000000UL;
     static const uint32_t TypePkt     = 0x00000600UL;
     static const uint32_t RequestPkt  = 0x00000100UL;
 public:
     static CanPacket getPingPacket(uint16_t number, uint16_t serial, bool isRequest) {
         CanPacket packet;
         packet.id = getCANid(number, serial);
-        packet.id |= RTRequest; 
+        packet.id |= RTR; 
         if (isRequest)
             packet.id |= RequestPkt; 
-        packet.id |= ExtendedId; 
+        packet.id |= EXT; 
         packet.len = 0; 
         return packet;
     }
@@ -576,12 +580,12 @@ private:
     static uint32_t getCANid(uint16_t number, uint16_t serial) {
         uint32_t id = 0;
         if (serial > 0) {
-            id |= ExtendedId;
+            id |= EXT;
             id |= (serial & 0x7FFF) << 14;
         }
         id |= number & 0x0FF;
 #ifdef TOTEMBUS_V1_SUPPORT_ENABLED
-        id |= ExtendedId;
+        id |= EXT;
 #endif
         return id;
     }
