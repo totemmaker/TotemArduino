@@ -21,14 +21,14 @@
 
 #include <stdint.h>
 
-#include "lib/ModuleCtrl.h"
+#include "lib/ModuleControl.h"
 #include "api/ModuleData.h"
 
-class TotemModule : public TotemLib::ModuleCtrl {
+class TotemModule : public TotemLib::Module::Control {
 public:
     using DataReceiver = void (*)(ModuleData data);
 
-    TotemModule(uint16_t number, uint16_t serial, DataReceiver receiver) : ModuleCtrl(number, serial), receiver(receiver) { }
+    TotemModule(uint16_t number, uint16_t serial, DataReceiver receiver) : Control(number, serial), receiver(receiver) { }
     TotemModule(uint16_t number, uint16_t serial = 0) : TotemModule(number, serial, nullptr) { }
 
     bool write(const char *command) {

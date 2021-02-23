@@ -16,27 +16,34 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>
  */
-#ifndef LIB_TOTEM_SRC_MODULES_MODULE
-#define LIB_TOTEM_SRC_MODULES_MODULE
+#ifndef LIB_TOTEM_SRC_LIB_MODULECONTROL
+#define LIB_TOTEM_SRC_LIB_MODULECONTROL
 
 #include "ModuleList.h"
 #include "TotemNetwork.h"
 
 namespace TotemLib {
 
-class ModuleCtrl : public ModuleObject {
+namespace Module {
+
+class Control : public ModuleObject {
 	uint16_t number;
 	uint16_t serial;
 public:
-	bool isConnected() {
-		if (getNetwork() == nullptr) return false;
-		return getNetwork()->isConnected(number, serial);
-	}
 	void setNumber(uint16_t number) {
 		this->number = number;
 	}
 	void setSerial(uint16_t serial) {
 		this->serial = serial;
+	}
+	uint16_t getNumber() {
+		return number;
+	}
+	uint16_t getSerial() {
+		return serial;
+	}
+	bool ping() {
+		return moduleCtrlSend(TotemBUS::ping());
 	}
 	static uint32_t hashCmd(const char *command) {
 		return TotemBUS::hash(command);
@@ -45,11 +52,11 @@ public:
 		return TotemBUS::hash16(model);
 	}
 protected:
-	ModuleCtrl(uint16_t number, uint16_t serial)
+	Control(uint16_t number, uint16_t serial)
 	: number(number), serial(serial) {
 		getList().attach(*this);
 	}
-	~ModuleCtrl() {
+	~Control() {
 		getList().detach(*this);
 	}
 
@@ -132,7 +139,6 @@ private:
 		// Validate if data received from this module
 		if (!isFromModule(message.number, message.serial)) 
 			return;
-
 		switch (message.type) {
 			case TotemBUS::MessageType::ResponseValue:
 				onModuleMessage(message.command, message.value, {nullptr, 0}); 
@@ -151,6 +157,8 @@ private:
 	}
 };
 
+} // namespace Module
+
 } // namespace TotemLib
 
-#endif /* LIB_TOTEM_SRC_MODULES_MODULE */
+#endif /* LIB_TOTEM_SRC_LIB_MODULECONTROL */

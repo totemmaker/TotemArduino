@@ -24,7 +24,9 @@
 
 namespace TotemLib {
 
-class ModuleCtrl;
+namespace Module {
+class Control;
+}
 class ModuleList;
 
 ModuleList& getDefaultModuleList();
@@ -98,7 +100,7 @@ protected:
 	ModuleList& moduleListGet() {
 		return *this;
 	}
-	friend ModuleCtrl;
+	friend Module::Control;
 };
 
 } // namespace TotemLib
