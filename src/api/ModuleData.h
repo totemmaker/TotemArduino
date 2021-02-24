@@ -31,7 +31,7 @@ struct ModuleData {
     bool isString() {
         return ptr != nullptr;
     }
-    uint32_t getInt() {
+    int getInt() {
         return value;
     }
     const char *getString() {
