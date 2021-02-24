@@ -59,7 +59,7 @@ public:
         bool isRequest = true;
         bool send(TotemBUS &totemBUS, uint32_t number, uint32_t serial) {
             if (data.isEmpty())
-                return totemBUS.sendPing(number, serial, isRequest);
+                return totemBUS.sendPing(number, serial, data.valueInt, isRequest);
             else
                 return totemBUS.send(number, serial, data, isRequest);
         }
@@ -131,9 +131,10 @@ public:
         frame.data.setValue(command);
         return frame;
     }
-    static Frame ping() {
+    static Frame ping(uint8_t data = 0) {
         Frame frame;
         frame.isRequest = true;
+        frame.data.valueInt = data; 
         return frame;
     }
     static Frame subscribe(uint32_t command, int32_t interval, bool responseReq = false) {
@@ -145,9 +146,10 @@ public:
         frame.data.setValue(interval);
         return frame;
     }
-    static Frame respondPing() {
+    static Frame respondPing(uint8_t data = 0) {
         Frame frame;
         frame.isRequest = false;
+        frame.data.valueInt = data; 
         return frame;
     }
     static Frame respond(uint32_t command, int32_t value) {
@@ -192,7 +194,7 @@ public:
         if (result == TotemBUSProtocol::Result::RECEIVED) {
             TotemBUSProtocol::Packet packet(selectedReader->getPacketInfo());
             return callbackMessage(callbackContext, encodeToMessage(
-                    packet.number(), packet.serial(), packet.isRequest(), packet.isPing(), packet.data()))
+                    packet.number(), packet.serial(), packet.isRequest(), packet.data()))
             ? TotemBUSProtocol::Result::OK : TotemBUSProtocol::Result::ERROR_APP;
         }
         else if (result == TotemBUSProtocol::Result::ERROR_EXT_MISSING) {
@@ -209,15 +211,16 @@ public:
             reader[i].clear();
         }
     }
-    static Message encodeToMessage(uint16_t number, uint16_t serial, bool isRequest, bool isPing, TotemBUSProtocol::Data &data) {
+    static Message encodeToMessage(uint16_t number, uint16_t serial, bool isRequest, TotemBUSProtocol::Data &data) {
         Message message;
         message.number = number;
         message.serial = serial;
         message.responseReq = data.isBit();
         message.command = data.getCommandInt();
-        if (isPing) {
+        if (data.isEmpty()) {
             message.type = isRequest ? MessageType::RequestPing : MessageType::ResponsePing;
             message.responseReq = isRequest;
+            message.value = data.valueInt;
             return message;
         }
         if (isRequest && !data.isCommandInt() && data.isValueInt()) {
@@ -263,9 +266,9 @@ private:
         return (TotemBUSProtocol::Writer::isValidNumber(number)
         && TotemBUSProtocol::Writer::isValidSerial(serial));
     }
-    bool sendPing(uint32_t number, uint32_t serial, bool isRequest) {
+    bool sendPing(uint32_t number, uint32_t serial, uint8_t data, bool isRequest) {
         if (!isValid(number, serial)) return false;
-        TotemBUSProtocol::CanPacket packet = TotemBUSProtocol::Writer::getPingPacket(number, serial, isRequest);
+        TotemBUSProtocol::CanPacket packet = TotemBUSProtocol::Writer::getPingPacket(number, serial, isRequest, data);
         return callbackCAN(callbackContext, packet);
     }
     bool send(uint32_t number, uint32_t serial, TotemBUSProtocol::Data &data, bool request) {

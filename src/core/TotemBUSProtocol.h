@@ -82,12 +82,7 @@ struct Data {
         return flags.is(Flags::ValInt);
     }
     bool isEmpty() {
-        return (!isBit()
-        && !isByte()
-        && !isCommandStr()
-        && !isCommandInt()
-        && !isValueStr()
-        && !isValueInt());
+        return flags.getAll() == 0;
     }
     bool getBit() {
         return isBit();
@@ -187,9 +182,6 @@ struct Packet {
     }
     bool isRequest() {
         return info.isRequest;
-    }
-    bool isPing() {
-        return info.data.flags.getAll() == 0;
     }
     Data& data() {
         return info.data;
@@ -312,14 +304,16 @@ public:
 private:
     Result process(uint32_t id, uint8_t *data, uint8_t len) {
         if (stream.fill == 0) {
-            memcpy(&stream.buffer[stream.fill], data, len);
-            stream.fill += len;
             info.data.flags.setAll(0);
             info.number = readModuleNumber(id);
             info.serial = readModuleSerial(id);
             info.isRequest = isRequest(id);
-            if (isRTRCAN(id))
+            if (isRTRCAN(id)) {
+                info.data.valueInt = len; 
                 return Result::RECEIVED;
+            }
+            memcpy(&stream.buffer[stream.fill], data, len);
+            stream.fill += len;
             if (getType(id) == PacketType::Basic)
                 return readPacketBasic() ? Result::RECEIVED : Result::ERROR_BASIC;
             else if (getType(id) == PacketType::Compound) {
@@ -428,14 +422,14 @@ struct Writer {
     static const uint32_t TypePkt     = 0x00000600UL;
     static const uint32_t RequestPkt  = 0x00000100UL;
 public:
-    static CanPacket getPingPacket(uint16_t number, uint16_t serial, bool isRequest) {
+    static CanPacket getPingPacket(uint16_t number, uint16_t serial, bool isRequest, uint8_t data = 0) {
         CanPacket packet;
         packet.id = getCANid(number, serial);
         packet.id |= RTR; 
         if (isRequest)
             packet.id |= RequestPkt; 
         packet.id |= EXT; 
-        packet.len = 0; 
+        packet.len = data & 0xF; 
         return packet;
     }
     Writer(Data &data, uint16_t number, uint16_t serial) : busData(data) {
