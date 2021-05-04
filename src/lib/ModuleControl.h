@@ -45,6 +45,9 @@ public:
 	bool ping() {
 		return moduleCtrlSend(TotemBUS::ping());
 	}
+	uint32_t getError() {
+		return responseError;
+	}
 	static uint32_t hashCmd(const char *command) {
 		return TotemBUS::hash(command);
 	}
@@ -102,6 +105,7 @@ private:
 		bool succ = false;
 		bool waiting = false;
 	} response;
+	uint32_t responseError = 0;
 	void giveResponse(int command, bool succ) {
 		if (response.command == command) {
 			response.succ = succ;
@@ -149,6 +153,7 @@ private:
 			case TotemBUS::MessageType::ResponseOk:
 				break;
 			default: 
+				responseError = message.value;
 				giveResponse(message.command, false);
 				return;
 		}
