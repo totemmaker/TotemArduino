@@ -90,8 +90,6 @@ public:
     }
     bool subscribeWait(const char *command, int intervalMs = 0) {
         return subscribeWait(hashCmd(command), intervalMs);
-        if (this->receiver == nullptr) return false;
-        return moduleSubscribe(hashCmd(command), intervalMs, true);
     }
     bool unsubscribe(const char *command) {
         return unsubscribe(hashCmd(command));
@@ -149,7 +147,6 @@ public:
     }
 
     bool read(uint32_t command) {
-        if (this->receiver == nullptr) return false;
         return moduleRead(command, false);
     }
     ModuleData readWait(uint32_t command) {
@@ -171,11 +168,9 @@ public:
         return true;
     }
     bool subscribe(uint32_t command, int intervalMs = 0) {
-        if (this->receiver == nullptr) return false;
         return moduleSubscribe(command, intervalMs, false);
     }
     bool subscribeWait(uint32_t command, int intervalMs = 0) {
-        if (this->receiver == nullptr) return false;
         return moduleSubscribe(command, intervalMs, true);
     }
     bool unsubscribe(uint32_t command) {
