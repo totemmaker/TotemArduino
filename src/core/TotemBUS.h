@@ -94,6 +94,9 @@ public:
         MemoryContainer(Memory<readersCount, readerBufferSize> &memory) :
         readerPtr(memory.reader),
         readerCnt(readersCount) { }
+        MemoryContainer(TotemBUSProtocol::Reader *readers, size_t count) :
+        readerPtr(readers),
+        readerCnt(count) { }
     };
     TotemBUS(MemoryContainer *memory, void *context, CallbackCANSend canSender, CallbackMessageReceive messageReceiver) : 
     TotemBUS(context, canSender, messageReceiver)
