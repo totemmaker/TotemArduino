@@ -16,8 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>
  */
-#ifndef LIB_TOTEM_SRC_MODULES_TOTEMMODULE
-#define LIB_TOTEM_SRC_MODULES_TOTEMMODULE
+#ifndef LIB_TOTEM_SRC_API_TOTEMMODULE
+#define LIB_TOTEM_SRC_API_TOTEMMODULE
 
 #include <stdint.h>
 
@@ -47,8 +47,11 @@ public:
     bool write(const char *command, const uint8_t *bytes, uint32_t bytesCount) {
         return write(hashCmd(command), bytes, bytesCount);
     }
-    bool write(const char *command, int8_t A, int8_t B, int8_t C, int8_t D = 0) {
+    bool write(const char *command, int8_t A, int8_t B, int8_t C, int8_t D) {
         return write(hashCmd(command), A, B, C, D);
+    }
+    bool write(const char *command, int8_t A, int8_t B, int8_t C) {
+        return write(hashCmd(command), A, B, C);
     }
     bool writeWait(const char *command) {
         return writeWait(hashCmd(command));
@@ -66,8 +69,11 @@ public:
     bool writeWait(const char *command, const uint8_t *bytes, uint32_t bytesCount) {
         return writeWait(hashCmd(command), bytes, bytesCount);
     }
-    bool writeWait(const char *command, int8_t A, int8_t B, int8_t C, int8_t D = 0) {
+    bool writeWait(const char *command, int8_t A, int8_t B, int8_t C, int8_t D) {
         return writeWait(hashCmd(command), A, B, C, D);
+    }
+    bool writeWait(const char *command, int8_t A, int8_t B, int8_t C) {
+        return writeWait(hashCmd(command), A, B, C);
     }
     
     bool read(const char *command) {
@@ -113,8 +119,11 @@ public:
     bool write(uint32_t command, const uint8_t *bytes, uint32_t bytesCount) {
         return moduleWrite(command, {reinterpret_cast<const char*>(bytes), bytesCount}, false);
     }
-    bool write(uint32_t command, int8_t A, int8_t B, int8_t C, int8_t D = 0) {
+    bool write(uint32_t command, int8_t A, int8_t B, int8_t C, int8_t D) {
         return moduleWrite(command, toValue(A, B, C, D), false);
+    }
+    bool write(uint32_t command, int8_t A, int8_t B, int8_t C) {
+        return moduleWrite(command, toValue(0, A, B, C), false);
     }
     bool writeWait(uint32_t command) {
         return moduleWrite(command, true);
@@ -132,8 +141,11 @@ public:
     bool writeWait(uint32_t command, const uint8_t *bytes, uint32_t bytesCount) {
         return moduleWrite(command, {reinterpret_cast<const char*>(bytes), bytesCount}, true);
     }
-    bool writeWait(uint32_t command, int8_t A, int8_t B, int8_t C, int8_t D = 0) {
+    bool writeWait(uint32_t command, int8_t A, int8_t B, int8_t C, int8_t D) {
         return moduleWrite(command, toValue(A, B, C, D), true);
+    }
+    bool writeWait(uint32_t command, int8_t A, int8_t B, int8_t C) {
+        return moduleWrite(command, toValue(0, A, B, C), true);
     }
 
     bool read(uint32_t command) {
@@ -214,4 +226,4 @@ private:
     }
 };
 
-#endif /* LIB_TOTEM_SRC_MODULES_TOTEMMODULE */
+#endif /* LIB_TOTEM_SRC_API_TOTEMMODULE */
