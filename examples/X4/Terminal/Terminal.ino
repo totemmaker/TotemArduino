@@ -230,7 +230,7 @@ Result processAPICall(ApiCall &call) {
             return ParseOk;
         }
         else if (call.paramCount == 4) {
-            if (Totem.X4.writeWait(call.command, *call.param[0].getInt(), *call.param[1].getInt(), *call.param[2].getInt(), *call.param[3].getInt()))  return ParseFailExec;
+            if (!Totem.X4.writeWait(call.command, *call.param[0].getInt(), *call.param[1].getInt(), *call.param[2].getInt(), *call.param[3].getInt()))  return ParseFailExec;
             return ParseOk;
         }
     }
