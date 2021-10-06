@@ -55,6 +55,11 @@ private:
     }
 };
 
+#define GPIOA 14
+#define GPIOB 23
+#define GPIOC 25
+#define GPIOD 26
+
 } // namespace TotemLib
 
 #endif /* LIB_TOTEM_SRC_INTERFACES_INTERFACEX4 */
