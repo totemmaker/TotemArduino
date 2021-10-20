@@ -24,7 +24,6 @@
 #include "api/TotemModule.h"
 #include "api/MotorDriver.h"
 #ifdef ARDUINO_ARCH_ESP32
-#include "interfaces/InterfaceX4.h"
 #include "interfaces/InterfaceBLE.h"
 #endif
 
@@ -32,7 +31,6 @@ class _Totem {
 public:
 #ifdef ARDUINO_ARCH_ESP32
     TotemLib::InterfaceBLE    BLE;
-    TotemLib::InterfaceX4     X4;
 #endif
 };
 

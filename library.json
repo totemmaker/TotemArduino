@@ -20,8 +20,5 @@
     "frameworks": "arduino",
     "platforms": [
         "espressif32"
-    ],
-    "build": {
-        "flags": "-L\"$PROJECT_LIBDEPS_DIR\\esp32dev\\Totem Library\\src\\esp32\" -lTotemX4"
-    }
+    ]
 }
