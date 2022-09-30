@@ -21,19 +21,19 @@
 
 #include <Arduino.h>
 
+#include "LabBoard.h"
+
+#ifdef ARDUINO_ARCH_ESP32
 #include "api/TotemModule.h"
 #include "api/MotorDriver.h"
-#ifdef ARDUINO_ARCH_ESP32
 #include "interfaces/InterfaceBLE.h"
-#endif
 
 class _Totem {
 public:
-#ifdef ARDUINO_ARCH_ESP32
     TotemLib::InterfaceBLE    BLE;
-#endif
 };
 
 extern _Totem Totem;
+#endif // ARDUINO_ARCH_ESP32
 
 #endif /* LIB_TOTEM_SRC_TOTEM */

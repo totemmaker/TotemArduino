@@ -20,6 +20,8 @@
 
 #include "Totem.h"
 
+#ifdef ARDUINO_ARCH_ESP32
+
 _Totem Totem;
 
 namespace TotemLib {
@@ -37,3 +39,5 @@ void setDefaultModuleList(ModuleList &list) {
 }
 
 } // namespace TotemLib
+
+#endif // ARDUINO_ARCH_ESP32
