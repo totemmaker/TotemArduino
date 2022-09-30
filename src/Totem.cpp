@@ -22,7 +22,10 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 
-_Totem Totem;
+_Totem& _getTotemInstance() {
+    static _Totem instance;
+    return instance;
+}
 
 namespace TotemLib {
 

@@ -16,7 +16,10 @@
  */
 #include "LabBoard.h"
 
-LabBoard LB;
+LabBoard& _getLabBoardInstance() {
+    static LabBoard instance;
+    return instance;
+}
 
 static int32_t read_serial(const char *cmd, bool isHex = false) {
     // Send read request

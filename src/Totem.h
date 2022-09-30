@@ -28,12 +28,15 @@
 #include "api/MotorDriver.h"
 #include "interfaces/InterfaceBLE.h"
 
+#define Totem _getTotemInstance()
+
 class _Totem {
 public:
     TotemLib::InterfaceBLE    BLE;
 };
 
-extern _Totem Totem;
+_Totem& _getTotemInstance();
+
 #endif // ARDUINO_ARCH_ESP32
 
 #endif /* LIB_TOTEM_SRC_TOTEM */

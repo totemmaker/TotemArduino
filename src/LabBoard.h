@@ -274,6 +274,8 @@ private:
     }
 };
 
-extern LabBoard LB;
+#define LB _getLabBoardInstance()
+
+LabBoard& _getLabBoardInstance();
 
 #endif /* LIB_LABBOARD */
