@@ -19,7 +19,7 @@
 #ifndef LIB_TOTEM_SRC_INTERFACES_BLE_TOTEMBLENETWORK
 #define LIB_TOTEM_SRC_INTERFACES_BLE_TOTEMBLENETWORK
 
-#include <FreeRTOS.h>
+#include "freertos/FreeRTOS.h"
 
 #include "lib/TotemNetwork.h"
 
