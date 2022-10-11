@@ -1,8 +1,8 @@
 {
     "name": "Totem Library",
-    "version": "1.0.7",
+    "version": "1.1.0",
     "description": "Control Totem robots over BLE (ESP32). Control LabBoard over serial using Arduino",
-    "keywords": "totem, totemmaker, esp32, robot, roboboard, X4, X3",
+    "keywords": "totem, totemmaker, esp32, robot, roboboard, X4, X3, Mini Lab, LabBoard, TotemDuino",
     "repository": {
         "type": "git",
         "url": "https://github.com/totemmaker/TotemArduino.git"
