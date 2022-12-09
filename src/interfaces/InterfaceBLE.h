@@ -23,7 +23,6 @@
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
-#include <vector>
 
 #include "api/TotemRobot.h"
 
@@ -38,16 +37,16 @@ class InterfaceBLE : BLEAdvertisedDeviceCallbacks, BLEClientCallbacks {
     bool mainTask = false;
     RobotReceiver foundReceiver = nullptr;
     RobotReceiver connectionReceiver = nullptr;
-    std::vector<TotemRobotInfo*> robotsList;
+    TotemRobotInfo* robotInfoPool[15];
     // Values shared between tasks
-    TotemRobotInfo *lastConnectedRobot = nullptr;
+    TotemRobotInfo** lastConnectedRobot = &robotInfoPool[14];
     QueueHandle_t connectQueue = nullptr;
 public:
     InterfaceBLE() {
-        this->lastConnectedRobot = getFreeRobot();
+
     }
     ~InterfaceBLE() {
-        for (auto robot : robotsList)
+        for (auto robot : robotInfoPool)
             delete robot;
     }
     /**
@@ -61,7 +60,7 @@ public:
         scanner->setActiveScan(true);
         scanner->setInterval(500);
         scanner->setWindow(5000);
-        scanner->setAdvertisedDeviceCallbacks(this, false);
+        scanner->setAdvertisedDeviceCallbacks(this, true);
     }
     /**
      * Start searching for Totem Robot over Bluetooth Low Energy.
@@ -131,8 +130,9 @@ public:
      */
     int getConnectedCount() {
         int count = 0;
-        for (auto robot : robotsList)
-            if (robot->isConnected()) count++;
+        for (auto robot : robotInfoPool) {
+            if (robot && robot->isConnected()) count++;
+        }
         return count;
     }
     /**
@@ -146,8 +146,8 @@ public:
      */
     std::vector<TotemRobot> getConnectedList() {
         std::vector<TotemRobot> ret;
-        for (auto robot : robotsList) {
-            if (robot->isConnected()) ret.push_back(robot);
+        for (auto &robot : robotInfoPool) {
+            if (robot && robot->isConnected()) ret.push_back(&robot);
         }
         return ret;
     }
@@ -157,20 +157,10 @@ private:
             BLEDevice::getScan()->stop();
         }
     }
-    TotemRobotInfo* getFreeRobot() {
-        for (auto robot : robotsList) {
-            if (!robot->isConnected()) return robot;
-        }
-        auto robot = new TotemRobotInfo();
-        robot->remoteRobot.client->setClientCallbacks(this);
-        assert(robot);
-        robotsList.push_back(robot);
-        return robot;
-    }
     static void scan_task(void *context) {
         InterfaceBLE *inst = static_cast<InterfaceBLE*>(context);
         // Create queue
-        inst->connectQueue = xQueueCreate(5, sizeof(BLEAdvertisedDevice*));
+        inst->connectQueue = xQueueCreate(5, sizeof(TotemRobotInfo**));
         assert(inst->connectQueue);
         // Set scan status to active
         inst->scanActive = true;
@@ -178,7 +168,7 @@ private:
         BLEDevice::getScan()->start(0, nullptr, false);
         // Loop trough all results
         while (inst->scanActive) {
-            TotemRobotInfo *robot;
+            TotemRobotInfo **robot;
             // Wait for any results from onResult()
             if (xQueueReceive(inst->connectQueue, &robot, (TickType_t)500) == pdPASS) {
                 // Save last attempted to connect robot
@@ -188,9 +178,9 @@ private:
                     inst->foundReceiver(TotemRobot(robot));
                 }
                 else {
-                    robot->connect();
+                    (*robot)->connect();
                 }
-                if (robot->isConnected()) {
+                if ((*robot)->isConnected()) {
                     // Connected
                     if (inst->connectionReceiver)
                         inst->connectionReceiver(TotemRobot(robot));
@@ -201,6 +191,14 @@ private:
         // Queue no more required
         vQueueDelete(inst->connectQueue);
         inst->connectQueue = nullptr;
+        // Remove unconnected robots
+        for (auto &r : inst->robotInfoPool) {
+            if (r) {
+                if (r->isConnected()) continue;
+                delete r;
+                r = nullptr;
+            }
+        }
         // Mark scan as inactive
         inst->scanActive = false;
         // Delete task
@@ -209,24 +207,55 @@ private:
         }
     }
     void onResult(BLEAdvertisedDevice advertisedDevice) override {
-        // Check if advertised device is Totem Robot
-        if (advertisedDevice.isAdvertisingService(advertisingService)) {
+        TotemRobotInfo **robot = nullptr;
+        // Look if device is already on the list
+        for (auto &r : robotInfoPool) {
+            if (r && r->address == advertisedDevice.getAddress().toString()) {
+                robot = &r;
+                break;
+            }
+        }
+        // Create new Totem robot
+        if (robot == nullptr) {
+            if (advertisedDevice.isAdvertisingService(advertisingService)) {
+                for (auto &r : robotInfoPool) { if (r == nullptr) { robot = &r; break; } }
+                assert(robot);
+                *robot = new TotemRobotInfo();
+                assert(*robot);
+                (*robot)->address = advertisedDevice.getAddress();
+                (*robot)->addressType = advertisedDevice.getAddressType();
+                (*robot)->remoteRobot.client->setClientCallbacks(this);
+            }
+            else {
+                return;
+            }
+        }
+        // Update manufacturer data
+        if (advertisedDevice.haveManufacturerData()) {
+            (*robot)->setManufacturerData(advertisedDevice.getManufacturerData());
+        }
+        // Update device name
+        if (advertisedDevice.haveName()) {
+            (*robot)->setName(advertisedDevice.getName());
+        }
+        // Show as discovered if all data is collected
+        if ((*robot)->isReady()) {
             // Put discovered board to queue
             if (uxQueueSpacesAvailable(connectQueue) > 0) {
-                // Send advertisement to connect_task
-                TotemRobotInfo *robot = getFreeRobot();
-                robot->setAdvertisingData(advertisedDevice);
+                // Send advertisement to scan_task
                 xQueueSendFromISR(connectQueue, &robot, nullptr);
-            }    
+            }
         }
     }
     void onConnect(BLEClient *pClient) override { }
     void onDisconnect(BLEClient *pClient) override {
-        for (auto robot : robotsList) {
-            if (robot->remoteRobot.client == pClient) {
+        for (auto &robot : robotInfoPool) {
+            if (robot && robot->remoteRobot.client == pClient) {
                 robot->remoteRobot.reset();
                 if (this->connectionReceiver)
-                    this->connectionReceiver(TotemRobot(robot));
+                    this->connectionReceiver(TotemRobot(&robot));
+                delete robot;
+                robot = nullptr;
                 break;
             }
         }

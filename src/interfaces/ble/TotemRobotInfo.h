@@ -26,6 +26,7 @@
 namespace TotemLib {
 
 class TotemRobotInfo {
+    uint8_t ready = 0;
 public:
     RemoteRobot remoteRobot;
     esp_ble_addr_type_t addressType;
@@ -46,9 +47,8 @@ public:
         return remoteRobot.connect(address, addressType);
     }
     
-    void setAdvertisingData(BLEAdvertisedDevice &advert) {
+    void setManufacturerData(std::string manufData) {
         // Read manufacturer data from advertisement
-        std::string manufData = advert.getManufacturerData();
         if (!manufData.empty()) {
             if (manufData.size() == 2+sizeof(advData)-1) {
                 memcpy(&advData, &manufData.data()[2], sizeof(advData)-1);
@@ -57,10 +57,20 @@ public:
             else if (manufData.size() == 2+sizeof(advData))
                 memcpy(&advData, &manufData.data()[2], sizeof(advData));
         }
+        ready |= 0x1;
+    }
 
-        name = String(advert.getName().c_str());
-        address = advert.getAddress();
-        addressType = advert.getAddressType();
+    void setName(std::string name) {
+        this->name = String(name.c_str());
+        ready |= 0x2;
+    }
+
+    bool isReady() {
+        if (ready == 3) {
+            ready |= 0x4;
+            return true;
+        }
+        return false;
     }
 };
 

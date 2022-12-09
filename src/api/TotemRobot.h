@@ -22,59 +22,59 @@
 #include "interfaces/ble/TotemRobotInfo.h"
 
 class TotemRobot {
-    TotemLib::TotemRobotInfo *info;
+    TotemLib::TotemRobotInfo **info;
 public:
-    TotemRobot(TotemLib::TotemRobotInfo *info = nullptr) : info(info) { }
+    TotemRobot(TotemLib::TotemRobotInfo **info = nullptr) : info(info) { }
     // Robot name    
     String getName() {
-        if (info == nullptr) return "";
-        return info->name;
+        if (*info == nullptr) return "";
+        return (*info)->name;
     }
     // Robot MAC address "00:11:22:33:44:55"
     String getAddress() {
-        if (info == nullptr) return "";
-        return String(info->address.toString().c_str());
+        if (*info == nullptr) return "";
+        return String((*info)->address.toString().c_str());
     }
     // Robot product type number (Minitrooper, Truck, ...)
     uint16_t getModel() {
-        if (info == nullptr) return 0;
-        return info->advData.model;
+        if (*info == nullptr) return 0;
+        return (*info)->advData.model;
     }
     // Robot color set by application. 24-bit encoding
     uint32_t getColor() {
-        if (info == nullptr) return 0;
-        return info->advData.color;
+        if (*info == nullptr) return 0;
+        return (*info)->advData.color;
     }
     // Get module number which is advertising
     uint32_t getNumber() {
-        if (info == nullptr) return 0;
-        return info->advData.number;
+        if (*info == nullptr) return 0;
+        return (*info)->advData.number;
     }
     // Check if we are connected to Totem Robot over Bluetooth Low Energy
     bool isConnected() {
-        if (info == nullptr) return false;
-        return info->isConnected();
+        if (*info == nullptr) return false;
+        return (*info)->isConnected();
     }
     // Connect to Totem Robot. Should be called inside onFoundRobot() function during findRobot()
     bool connect() {
-        if (info == nullptr) return false;
-        return info->connect();
+        if (*info == nullptr) return false;
+        return (*info)->connect();
     }
     // Disconnect from currently connected robot
     void disconnect() {
-        if (info == nullptr) return;
+        if (*info == nullptr) return;
         if (!isConnected()) return;
-        info->remoteRobot.client->disconnect();
+        (*info)->remoteRobot.client->disconnect();
     }
     // Attach provided module to this robot connection
     void attach(TotemLib::ModuleObject &module) {
-        if (info == nullptr) return;
-        info->remoteRobot.attach(module);
+        if (*info == nullptr) return;
+        (*info)->remoteRobot.attach(module);
     }
     // Detach provided module from this robot connection
     void detach(TotemLib::ModuleObject &module) {
-        if (info == nullptr) return;
-        info->remoteRobot.detach(module);
+        if (*info == nullptr) return;
+        (*info)->remoteRobot.detach(module);
     }
     // Check if TotemRobot == TotemRobot
     bool operator == (const TotemRobot &ref) const {
