@@ -24,14 +24,16 @@ public:
         driver.addServo(0, "servoA", -30, 0, 50, true);
     }
     // Set drive and brake parameters
-    void move(int drivePower, int brakePower) {
+    void drive(int drivePower) {
+        driver.brakeAll(0);
         driver.move(drivePower);
+        // Light up leds according to drive parameters
+        setLed(drivePower < 0 ? Reverse : Idle);
+    }
+    void brake(int brakePower = 100) {
         driver.brakeAll(brakePower);
-        // Light up leds according to drive and braking parameters
-        if (drivePower < 0)
-            setLed(brakePower != 0 ? ReverseBrake : Reverse);
-        else
-            setLed(brakePower != 0 ? Brake : Idle);
+        // Light up leds according to braking parameters
+        setLed(lastLedState == Reverse ? ReverseBrake : Brake);
     }
     // Steer wheels
     void steer(int position) {
@@ -61,9 +63,9 @@ private:
         Reverse,
         ReverseBrake
     };
+    LedState lastLedState = Idle;
     // Set led color state
     void setLed(LedState state) {
-        static LedState lastLedState = Idle;
         if (state == lastLedState) return;
         switch (state) {
             case Idle:
@@ -89,7 +91,15 @@ private:
 void setup() {
     // put your setup code here, to run once:
     Serial.begin(115200);
-    Totem.X4.begin(); // Start X4 module
+    // Setup Totem Library
+    Totem.BLE.begin(); // Start Bluetooth Low Energy interface
+    Serial.println("Searching for Totem robot...");
+    TotemRobot robot = Totem.BLE.findRobot(); // Wait until connected to first found Totem robot
+    // Print connected robot name
+    Serial.print("Connected to: ");
+    Serial.println(robot.getName());
+    // Print battery status
+    truck.printBattery();
     // Proceed to loop
 }
 
@@ -97,14 +107,14 @@ void loop() {
     // put your main code here, to run repeatedly:
     truck.steer(-100); // Steer left to max angle
     delay(500); // Wait 500ms
-    truck.move(30, 0); // Drive forward at 30% power
+    truck.drive(30); // Drive forward at 30% power
     delay(1000);
-    truck.move(0, 100); // Stop drive and brake
+    truck.brake(); // Stop drive and brake
     delay(500);
     truck.steer(100); // Steer right to max angle
     delay(500);
-    truck.move(-30, 0); // Drive backward at 30% power
+    truck.drive(-30); // Drive backward at 30% power
     delay(1000);
-    truck.move(0, 100); // Stop drive and brake
+    truck.brake(); // Stop drive and brake
     delay(500);
 }
