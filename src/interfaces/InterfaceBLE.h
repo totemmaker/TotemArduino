@@ -40,7 +40,6 @@ class InterfaceBLE : BLEAdvertisedDeviceCallbacks, BLEClientCallbacks {
     RobotReceiver connectionReceiver = nullptr;
     std::vector<TotemRobotInfo*> robotsList;
     // Values shared between tasks
-    TotemRobotInfo *connectingRobot = nullptr;
     TotemRobotInfo *lastConnectedRobot = nullptr;
     QueueHandle_t connectQueue = nullptr;
 public:
@@ -81,9 +80,6 @@ public:
     TotemRobot findRobot(RobotReceiver receiver = nullptr) {
         this->foundReceiver = receiver;
         this->mainTask = true;
-        if (receiver) {
-            FreeRTOS::startTask(InterfaceBLE::connect_task, "connect_task", this, 3072);
-        }
         scan_task(this);
         return TotemRobot(this->lastConnectedRobot);
     }
@@ -104,12 +100,10 @@ public:
      */
     void findRobotNoBlock(RobotReceiver receiver = nullptr) {
         if (scanner == nullptr) return;
+        if (scanActive) return;
         this->foundReceiver = receiver;
         this->mainTask = false;
-        if (receiver) {
-            FreeRTOS::startTask(InterfaceBLE::connect_task, "connect_task", this, 3072);
-        }
-        startScan();
+        FreeRTOS::startTask(InterfaceBLE::scan_task, "scan_task", this, 3072);
     }
     /**
      * Check if find operation is active.
@@ -158,12 +152,6 @@ public:
         return ret;
     }
 private:
-    void startScan(bool continueScan = false) {
-        if (!scanActive) {
-            scanActive = true;
-            FreeRTOS::startTask(InterfaceBLE::scan_task, "scan_task", this, 3072);
-        }
-    }
     void stopScan() {
         if (scanActive) {
             BLEDevice::getScan()->stop();
@@ -181,51 +169,29 @@ private:
     }
     static void scan_task(void *context) {
         InterfaceBLE *inst = static_cast<InterfaceBLE*>(context);
-        // Set scan status to active
-        inst->scanActive = true;
-        // Start BLE scan. This will block task
-        BLEDevice::getScan()->start(0, false);
-        // Scan completed.
-        // Check if found receiver was not registered
-        if (inst->foundReceiver == nullptr) {
-            // Check if any robot was found
-            if (inst->connectingRobot) {
-                // Try connect discovered robot
-                inst->connectingRobot->connect();
-                // Check if robot is connected
-                if (inst->connectingRobot->isConnected()) {
-                    // Set robot as connected
-                    inst->lastConnectedRobot = inst->connectingRobot;
-                    // Call connected event if registered
-                    if (inst->connectionReceiver)
-                        inst->connectionReceiver(TotemRobot(inst->lastConnectedRobot));
-                }
-                // Set connecting robot to none
-                inst->connectingRobot = nullptr;
-            }
-        }
-        // Mark scan as inactive
-        inst->scanActive = false;
-        // Delete task
-        if (!inst->mainTask) {
-            vTaskDelete(nullptr);
-        }
-    }
-    static void connect_task(void *context) {
-        InterfaceBLE *inst = static_cast<InterfaceBLE*>(context);
         // Create queue
         inst->connectQueue = xQueueCreate(5, sizeof(BLEAdvertisedDevice*));
         assert(inst->connectQueue);
+        // Set scan status to active
+        inst->scanActive = true;
+        // Start BLE scan. This will block task
+        BLEDevice::getScan()->start(0, nullptr, false);
         // Loop trough all results
         while (inst->scanActive) {
             TotemRobotInfo *robot;
             // Wait for any results from onResult()
             if (xQueueReceive(inst->connectQueue, &robot, (TickType_t)500) == pdPASS) {
-                // Call found receiver to connect manually
-                inst->foundReceiver(TotemRobot(robot));
+                // Save last attempted to connect robot
+                inst->lastConnectedRobot = robot;
+                // Call found receiver or connect manually
+                if (inst->foundReceiver) {
+                    inst->foundReceiver(TotemRobot(robot));
+                }
+                else {
+                    robot->connect();
+                }
                 if (robot->isConnected()) {
                     // Connected
-                    inst->lastConnectedRobot = robot;
                     if (inst->connectionReceiver)
                         inst->connectionReceiver(TotemRobot(robot));
                     break;
@@ -235,20 +201,18 @@ private:
         // Queue no more required
         vQueueDelete(inst->connectQueue);
         inst->connectQueue = nullptr;
+        // Mark scan as inactive
+        inst->scanActive = false;
         // Delete task
-        vTaskDelete(nullptr);
+        if (!inst->mainTask) {
+            vTaskDelete(nullptr);
+        }
     }
     void onResult(BLEAdvertisedDevice advertisedDevice) override {
         // Check if advertised device is Totem Robot
         if (advertisedDevice.isAdvertisingService(advertisingService)) {
-            // If no receiver provided - connect to any first result
-            if (foundReceiver == nullptr) {
-                this->connectingRobot = getFreeRobot();
-                this->connectingRobot->setAdvertisingData(advertisedDevice);
-                stopScan();
-            }
-            // Check if there is free space in queue
-            else if (uxQueueSpacesAvailable(connectQueue) > 0) {
+            // Put discovered board to queue
+            if (uxQueueSpacesAvailable(connectQueue) > 0) {
                 // Send advertisement to connect_task
                 TotemRobotInfo *robot = getFreeRobot();
                 robot->setAdvertisingData(advertisedDevice);
