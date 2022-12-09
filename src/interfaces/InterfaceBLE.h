@@ -254,7 +254,7 @@ private:
                 robot->remoteRobot.reset();
                 if (this->connectionReceiver)
                     this->connectionReceiver(TotemRobot(&robot));
-                delete robot;
+                // delete robot; //FIXME: properly clean resources
                 robot = nullptr;
                 break;
             }
