@@ -77,6 +77,7 @@ public:
      * @return TotemRobot - instance of robot connection. Never returns nullptr
      */
     TotemRobot findRobot(RobotReceiver receiver = nullptr) {
+        vTaskDelay(100 / portTICK_PERIOD_MS); //FIXME: some delay between findRobot calls is required to prevent crash
         this->foundReceiver = receiver;
         this->mainTask = true;
         scan_task(this);
