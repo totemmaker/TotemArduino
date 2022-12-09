@@ -210,7 +210,7 @@ private:
         TotemRobotInfo **robot = nullptr;
         // Look if device is already on the list
         for (auto &r : robotInfoPool) {
-            if (r && r->address == advertisedDevice.getAddress().toString()) {
+            if (r && r->address.equals(advertisedDevice.getAddress())) {
                 robot = &r;
                 break;
             }
