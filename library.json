@@ -17,5 +17,8 @@
     ],
     "license": "LGPL-3.0-or-later",
     "homepage": "https://totemmaker.net",
-    "frameworks": "arduino"
+    "frameworks": "arduino",
+    "scripts": {
+        "postinstall": ["scripts/board_installer.py"]
+    }
 }
