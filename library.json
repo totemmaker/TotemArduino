@@ -19,6 +19,6 @@
     "homepage": "https://totemmaker.net",
     "frameworks": "arduino",
     "scripts": {
-        "postinstall": ["scripts/board_installer.py"]
+        "postinstall": ["extras/board_installer.py"]
     }
 }
