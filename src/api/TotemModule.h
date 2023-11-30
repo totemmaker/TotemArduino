@@ -24,6 +24,8 @@
 #include "lib/ModuleControl.h"
 #include "api/ModuleData.h"
 
+namespace TotemLib {
+
 class TotemModule : public TotemLib::Module::Control {
 public:
     using DataReceiver = void (*)(ModuleData data);
@@ -220,5 +222,7 @@ private:
         }
     }
 };
+
+} // namespace TotemLib
 
 #endif /* LIB_TOTEM_SRC_API_TOTEMMODULE */

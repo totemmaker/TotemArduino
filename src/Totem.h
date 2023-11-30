@@ -30,12 +30,15 @@
 
 #define Totem _getTotemInstance()
 
-class _Totem {
+class _TotemClass {
 public:
     TotemLib::InterfaceBLE    BLE;
 };
 
-_Totem& _getTotemInstance();
+_TotemClass& _getTotemInstance();
+// Workaround for compiling on X4, until Totem.BLE is refactored
+#define TotemModule TotemLib::TotemModule
+#define ModuleData TotemLib::ModuleData
 
 #endif // ARDUINO_ARCH_ESP32
 

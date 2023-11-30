@@ -21,6 +21,8 @@
 
 #include "core/TotemBUS.h"
 
+namespace TotemLib {
+
 struct ModuleData {
     bool is(const char *command) {
         return cmdHash == TotemBUS::hash(command);
@@ -67,5 +69,7 @@ private:
     uint8_t *ptr = nullptr;
     int32_t value = 0;
 };
+
+} // namespace TotemLib
 
 #endif /* LIB_TOTEM_SRC_MODULES_MODULEDATA */

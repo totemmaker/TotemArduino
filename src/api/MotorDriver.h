@@ -137,12 +137,12 @@ public:
         this->module.setNumber(serial);
     }
     // Get TotemModule object
-    TotemModule& getModule() {
+    TotemLib::TotemModule& getModule() {
         return module;
     }
 private:
     bool singleCommand;
-    TotemModule module;
+    TotemLib::TotemModule module;
     Motor motors[4] = {};
     Servo servos[3] = {};
     uint8_t turnIntensity = 100;

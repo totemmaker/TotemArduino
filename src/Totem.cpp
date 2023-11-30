@@ -22,8 +22,8 @@
 
 #ifdef ARDUINO_ARCH_ESP32
 
-_Totem& _getTotemInstance() {
-    static _Totem instance;
+_TotemClass& _getTotemInstance() {
+    static _TotemClass instance;
     return instance;
 }
 
