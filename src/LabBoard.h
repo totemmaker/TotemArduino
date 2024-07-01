@@ -50,127 +50,137 @@ public:
     struct Voltage {
         // Read VIN pin voltage.
         // Returns: (float) `6.0` - `30.0` V | `-100.0` - invalid.
-        float getVIN();
+        float getVIN() { return ((float)read_serial("IN:VIN")) / 1000; }
         // Read ±50v pin voltage.
         // Returns: (float) `-50.0` - `50.0` V | `-100.0` - invalid.
-        float get50V();
+        float get50V() { return ((float)read_serial("IN:50V")) / 1000; }
         // Read ±5v pin voltage.
         // Returns: (float) `-6.15` - `6.15` V | `-100.0` - invalid.
-        float get5V();
+        float get5V() { return ((float)read_serial("IN:5V")) / 1000; }
         // Read ±0.5v pin voltage.
         // Returns: (float) `-0.7` - `0.7` V | `-100.0` - invalid.
-        float get05V();
+        float get05V() { return ((float)read_serial("IN:05V")) / 1000; }
         // Read SHUNT pin current.
         // Returns: (float) `0.0` - `0.8` A | `-100.0` - invalid.
-        float getAmp();
+        float getAmp() { return read_serial("IN:AMP"); }
 
         // Write VREG pin voltage.
         // Maximum output voltage depends on VIN voltage.
         // `voltage`: (float) `3.0` - `VIN - 1.0` V.
-        void setVREG(float voltage);
+        void setVREG(float voltage) { write("OUT:VREG", (int32_t)(voltage * 1000)); }
         // Write DAC1 pin voltage.
         // `voltage`: (float) `0.0` - `3.25` V.
-        void setDAC1(float voltage);
+        void setDAC1(float voltage) { write("OUT:DAC1", (int32_t)(voltage * 1000)); }
         // Write DAC2 pin voltage.
         // `voltage`: (float) `0.0` - `3.25` V.
-        void setDAC2(float voltage);
+        void setDAC2(float voltage) { write("OUT:DAC2", (int32_t)(voltage * 1000)); }
         // Write DAC3 pin voltage.
         // `voltage`: (float) `0.0` - `3.25` V.
-        void setDAC3(float voltage);
+        void setDAC3(float voltage) { write("OUT:DAC3", (int32_t)(voltage * 1000)); }
         
         // Read VREG pin voltage.
         // Returns: (float) `3.0` - `VIN - 1.0` V.
-        float getVREG();
+        float getVREG() { return ((float)read_serial("OUT:VREG")) / 1000; }
         // Read DAC1 pin voltage.
         // Returns: (float) `0.0` - `3.25` V.
-        float getDAC1();
+        float getDAC1() { return ((float)read_serial("OUT:DAC1")) / 1000; }
         // Read DAC2 pin voltage.
         // Returns: (float) `0.0` - `3.25` V.
-        float getDAC2();
+        float getDAC2() { return ((float)read_serial("OUT:DAC2")) / 1000; }
         // Read DAC3 pin voltage.
         // Returns: (float) `0.0` - `3.25` V.
-        float getDAC3();
+        float getDAC3() { return ((float)read_serial("OUT:DAC3")) / 1000; }
     } volt;
 
     struct TXD {
         // Stop signal generator on `TXD` pin.
-        void stop();
+        void stop() { write("TXD:RUN", 0); }
         // Start signal generator on `TXD` pin.
-        void start();
+        void start() { write("TXD:RUN", 1); }
         // Start signal generator on `TXD` pin and stop after number of pulses elapsed.
         // Configured with with `setBurstCount(count)`.
-        void startBurst();
+        void startBurst() { write("TXD:RUN", 2); }
         // Write amount of pulses to output during burst mode.
         // Generator will stop when configured number is reached.
         // `count`: `0` - `65535`.
-        void setBurstCount(uint16_t count);
+        void setBurstCount(uint16_t count) { write("TXD:CNT", count); }
         // Write output signal frequency in hertz.
         // `frequency`: `1` - `1000000` Hz
-        void setFrequency(uint32_t frequency);
+        void setFrequency(uint32_t frequency) { write("TXD:FHZ", frequency); }
         // Write output signal duty cycle in percentage. 0.1 precision.
         // `percentage`: (float) `0.0` - `100.0` %
-        void setDutyCycle(float percentage);
+        void setDutyCycle(float percentage) {
+            if (percentage < 0) percentage = 0;
+            if (percentage > 100) percentage = 100;
+            write("TXD:DPCT", (int32_t)(percentage * 10));
+        }
         // Write output signal frequency (period) in microseconds.
         // `period`: `1` - `1000000` μs
-        void setPeriod(float period);
+        void setPeriod(float period) {
+            if (period < 0) period = 0;
+            write("TXD:FUS", (int32_t)(period * 1000000));
+        }
         // Write output signal duty cycle (pulse width) in microseconds.
         // Value can't be larger than period!
         // `pulse`: `0` - `1000000` μs
-        void setPulseWidth(float pulse);
+        void setPulseWidth(float pulse) {
+            if (pulse < 0) pulse = 0;
+            write("TXD:DUS", (int32_t)(pulse * 1000000));
+        }
 
         // Read if generator is running in burst mode.
-        bool isBurst();
+        bool isBurst() { return read_serial("TXD:RUN") == 2; }
         // Read if generator is running.
-        bool isRunning();
+        bool isRunning() { return read_serial("TXD:RUN") != 0; }
         // Read output signal frequency in hertz.
         // Returns: `1` - `1000000` Hz
-        uint32_t getFrequency();
+        uint32_t getFrequency() { return read_serial("TXD:FHZ"); }
         // Read output signal duty cycle in percentage.
         // Returns: (float) `0.0` - `100.0` %
-        float getDutyCycle();
+        float getDutyCycle() { return ((float)read_serial("TXD:DPCT")) / 10; }
         // Read output signal frequency (period) in microseconds.
         // Returns: `1` - `1000000` μs
-        float getPeriod();
+        float getPeriod() { return ((float)read_serial("TXD:FUS")) / 1000000; }
         // Read output signal duty cycle (pulse width) in microseconds.
         // Returns: `0` - `1000000` μs
-        float getPulseWidth();
+        float getPulseWidth() { return ((float)read_serial("TXD:DUS")) / 1000000; }
     } txd;
 
     struct RXD {
         // Stop signal monitor on `DIG1` pin.
-        void stop();
+        void stop() { write("RXD:RUN", (int)0); }
         // Start signal monitor on `DIG1` pin.
-        void start();
+        void start() { write("RXD:RUN", (int)1); }
         // Read input signal frequency in hertz.
         // Returns: `0` - `23000000` Hz
-        uint32_t getFrequency();
+        uint32_t getFrequency() { return read_serial("RXD:FHZ"); }
         // Read input signal frequency (period) in microseconds.
         // Returns: `0.04` - `1000000.0` μs
         float getPeriod() { return 1.0f / getFrequency(); }
         // Read number of signal pulses elapsed.
         // Returns: number
-        uint32_t getCount();
+        uint32_t getCount() { return read_serial("RXD:CNT"); }
         // Reset pulse counter to 0 (value returned by `getCount()`).
-        void resetCount();
+        void resetCount() { write("RXD:CNT", "0"); }
 
         // Write sample (detect) edge. Default: HIGH
         // `edge`:
         // `0` - LOW edge (falling)
         // `1` - HIGH edge (rising)
-        void setSampleEdge(uint8_t edge);
+        void setSampleEdge(uint8_t edge) { write("RXD:EDGE", edge ? "1" : "0"); }
         // Read sample (detect) edge.
         // Returns:
         // `0` - LOW edge (falling)
         // `1` - HIGH edge (rising)
-        uint8_t getSampleEdge();
+        uint8_t getSampleEdge() { return read_serial("RXD:EDGE") ? HIGH : LOW; }
     } rxd;
 
     // Read LabBoard pin `DIG1` digital state.
     // Returns: `0` - LOW | `1` - HIGH
-    uint8_t getDIG1();
+    uint8_t getDIG1() { return read_serial("DIG1") ? HIGH : LOW; }
     // Read LabBoard pin `DIG2` digital state.
     // Returns: `0` - LOW | `1` - HIGH
-    uint8_t getDIG2();
+    uint8_t getDIG2() { return read_serial("DIG2") ? HIGH : LOW; }
     
     struct Display {
         // Write value to display. Aligned to left.
@@ -188,22 +198,28 @@ public:
         void clear() { print(""); }
         // Write whole display blinking rate in milliseconds.
         // `rate`: `0` - `1000` ms | `0`- stop blink.
-        void setBlink(uint16_t rate);
+        void setBlink(uint16_t rate) { write("DISP:BLI", rate); }
         // Write specific segment blinking rate in milliseconds.
         // `segment`: `1` - `9` number from left.
         // `rate`: `0` - `1000` ms | `0` - stop blink.
-        void setBlink(uint8_t segment, uint16_t rate);
+        void setBlink(uint8_t segment, uint16_t rate) {
+            if (segment == 0) setBlink(rate);
+            else setBlinkBinary((1<<(segment-1)), rate);
+        }
         // Write binary map of segments group to set blinking rate in milliseconds.
         // `map`: `B000000000` - `B111111111` | `0x0` - `0x1FF`.
         // `rate`: `0` - `1000` ms | `0` - stop blink.
-        void setBlinkBinary(uint16_t map, uint16_t rate);
+        void setBlinkBinary(uint16_t map, uint16_t rate) { write("DISP:BLI", map, rate); }
         // Write display brightness.
         // `brightness`: `0` - `15`
-        void setBrightness(uint8_t brightness);
+        void setBrightness(uint8_t brightness) {
+            if (brightness > 15) brightness = 15;
+            write("DISP:DIM", brightness);
+        }
         // Write serial monitor feature state (on / off).
         // Will print all data from `Serial.println()` to display. Default: on.
         // `state`: `0` - off | `1` - on
-        void setMonitor(uint8_t enabled);
+        void setMonitor(uint8_t enabled) { write("DISP:MON", enabled); }
     } display;
 
     struct LED {
@@ -216,43 +232,50 @@ public:
         // Write specific LED state (on / off).
         // `number`: `1` - `11` | `0` - all LED.
         // `state`: `0` - off | `1` - on.
-        void set(uint8_t num, uint8_t state);
+        void set(uint8_t num, uint8_t state) { write("LED", num, state ? "1" : "0"); }
         // Read specific LED state.
         // `number`: `1` - `11` | `0` - all LED.
         // Returns: `0` - off | `1` - on.
-        uint8_t get(uint8_t num);
+        uint8_t get(uint8_t num) { return !!(getBinary() & (1 << num)); }
         // Write binary map of turned on LED.
         // `map`: `B00000000000` - `B11111111111` | `0x0` - `0x7FF`
-        void setBinary(uint16_t map);
+        void setBinary(uint16_t map) {
+            Serial.print("LB:LED:");
+            Serial.println(map, HEX);
+        }
         // Read binary map of turned on LED.
         // Returns: `B00000000000` - `B11111111111` | `0x0` - `0x7FF`
-        uint16_t getBinary();
+        uint16_t getBinary() { return read_serial("LED", true); }
     } led;
     
     struct Key {
         // Read specific key state.
         // Returns:  `0` - not pressed | `1` - is pressed
-        uint8_t get(uint8_t num);
+        uint8_t get(uint8_t num) { return !!(getBinary() & (1 << num)); }
         // Read binary map of pressed keys.
         // Returns: `B00000` - `B11111` | `0x0` - `0x1F`
-        uint16_t getBinary();
+        uint16_t getBinary() { return read_serial("KEY", true); }
     } key;
 
     struct Config {
         // Write configuration (setting) value.
         // `name`: setting name ("DISP")
         // `value`: setting value
-        void set(const char name[], int32_t value);
+        void set(const char name[], int32_t value) { write(name, value); }
         // Read configuration (setting) value.
         // `name`: setting name ("DISP")
         // Returns: setting value
-        int32_t get(const char name[]);
+        int32_t get(const char name[]) {
+            char cmd[10] = "CFG:";
+            strncpy(cmd+4, name, sizeof(cmd)-4);
+            return read_serial(cmd);
+        }
     } config;
 
     // Restart LabBoard into boot mode (for firmware update).
-    void runBoot();
+    void runBoot() { write("BOOT", 1); }
     // Restart LabBoard
-    void restart();
+    void restart() { write("RST", 1); }
     
 private:
     template<typename T1>
@@ -272,10 +295,30 @@ private:
         Serial.print(':');
         Serial.println(param2);
     }
+    static int32_t read_serial(const char *cmd, bool isHex = false) {
+        // Send read request
+        Serial.flush();
+        Serial.print("LB:");
+        Serial.print(cmd);
+        Serial.println(":?");
+        // Wait for response
+        int32_t result = 0;
+        if (Serial.find(const_cast<char*>(cmd))) {
+            char hexStr[15];
+            int read = Serial.readBytesUntil('\n', hexStr, sizeof(hexStr));
+            if (read < 2) return 0;
+            hexStr[read] = '\0';
+            result = strtol(hexStr+1, NULL, isHex ? 16 : 10);
+        }
+        return result;
+    }
 };
 
 #define LB _getLabBoardInstance()
 
-LabBoard& _getLabBoardInstance();
+inline LabBoard& _getLabBoardInstance() {
+    static LabBoard instance;
+    return instance;
+}
 
 #endif /* LIB_LABBOARD */
