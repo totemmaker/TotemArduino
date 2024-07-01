@@ -2,8 +2,8 @@
  * Display voltage readings.
  * Each display segment shows 0.5V, 5V, 50V respectively
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

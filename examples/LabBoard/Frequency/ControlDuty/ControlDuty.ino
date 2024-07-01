@@ -2,8 +2,8 @@
  * Varying duty cycle of 1000Hz frequency.
  * Outputs on TXD pin and changes between 10% and 90%.
  */
-#include <Totem.>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

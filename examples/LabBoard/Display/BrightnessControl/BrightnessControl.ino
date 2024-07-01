@@ -1,8 +1,8 @@
 /**
  * Control LabBoard display brightness
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

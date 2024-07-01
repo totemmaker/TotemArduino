@@ -3,8 +3,8 @@
  * Flash this example to TotemDuino.
  * Open Arduino IDE serial monitor to view printed information.
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 // Function to print number with decimal point
 void printlnDot(long value, int dot) {
   int power = 1;

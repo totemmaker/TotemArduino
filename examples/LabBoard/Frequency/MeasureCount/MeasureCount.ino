@@ -6,8 +6,8 @@
  * Connect wire from pin D9 to DIG1 and observe number increment
  * by 1000 each 1 second.
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

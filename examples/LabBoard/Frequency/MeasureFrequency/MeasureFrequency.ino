@@ -5,8 +5,8 @@
  * Connect wire from pin D9 to DIG1 and observe display showing
  * number 1000 - measured frequency of pin D9.
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

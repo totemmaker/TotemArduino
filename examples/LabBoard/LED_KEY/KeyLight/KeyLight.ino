@@ -2,8 +2,8 @@
  * Show pressed key on display.
  * Light LED near pressed key.
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

@@ -4,8 +4,8 @@
  * DAC2 - inverted sine function
  * DAC3 - triangle
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

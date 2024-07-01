@@ -1,8 +1,8 @@
 /**
  * Displaying scrolling text on LabBoard display
  */
-#include <Totem.h>
-
+##include <TotemLabBoard.h>
+TotemLabBoard LB;
 const char text[] = "This is a long scrolling text trying to fit in a display. ";
 size_t textStart = 0;
 

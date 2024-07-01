@@ -2,8 +2,8 @@
  * Demonstrate serial monitor mode.
  * LabBoard will display all text, sent trough "Serial.print()"
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);

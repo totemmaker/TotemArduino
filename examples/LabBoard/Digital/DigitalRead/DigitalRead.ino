@@ -2,8 +2,8 @@
  * Display digital state of DIG1 and DIG2 pins.
  * DIG1 and DIG2 LED also represents pin state.
  */
-#include <Totem.h>
-
+#include <TotemLabBoard.h>
+TotemLabBoard LB;
 void setup() {
   // Set serial baud rate to 57600
   Serial.begin(57600);
