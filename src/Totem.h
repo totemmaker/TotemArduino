@@ -21,7 +21,15 @@
 
 #include <Arduino.h>
 
-#include "LabBoard.h"
+#ifndef IGNORE_TOTEM_H_WARNING
+#pragma GCC warning "Totem.h is deprecated. Use: #include <TotemLabBoard.h>"
+#endif
+#include "TotemLabBoard.h"
+#define LB _getLabBoardInstance()
+inline TotemLabBoard& _getLabBoardInstance() {
+    static TotemLabBoard instance;
+    return instance;
+}
 
 #ifdef ARDUINO_ARCH_ESP32
 #include "api/TotemModule.h"

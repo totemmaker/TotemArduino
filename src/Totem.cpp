@@ -18,6 +18,7 @@
  */
 #include <Arduino.h>
 
+#define IGNORE_TOTEM_H_WARNING
 #include "Totem.h"
 
 #ifdef ARDUINO_ARCH_ESP32

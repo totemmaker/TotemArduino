@@ -1,25 +1,16 @@
 /* 
- * Copyright (c) 2022 TotemMaker.
- * 
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 3 of the License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>
+ * Copyright 2022 Totem Technology, UAB
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/.
  */
-#ifndef LIB_LABBOARD
-#define LIB_LABBOARD
+#ifndef LIB_BOARD_TOTEM_LAB_BOARD
+#define LIB_BOARD_TOTEM_LAB_BOARD
 
 #include <Arduino.h>
 
-class LabBoard {
+class TotemLabBoard {
 public:
     // Invalid voltage reading
     const float invalid = -100.0;
@@ -314,11 +305,4 @@ private:
     }
 };
 
-#define LB _getLabBoardInstance()
-
-inline LabBoard& _getLabBoardInstance() {
-    static LabBoard instance;
-    return instance;
-}
-
-#endif /* LIB_LABBOARD */
+#endif /* LIB_BOARD_TOTEM_LAB_BOARD */
