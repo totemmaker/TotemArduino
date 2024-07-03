@@ -43,6 +43,10 @@ public:
         ResponseString, 
         ResponseOk,     
         ResponseFail,   
+        SendValue,      
+        SendString,     
+        RequestValue,   
+        RequestString,  
     };
     struct Message {
         MessageType type = MessageType::Undefined;
@@ -132,6 +136,34 @@ public:
         frame.isRequest = true;
         frame.data.setBit(true);
         frame.data.setValue(command);
+        return frame;
+    }
+    static Frame requestValue(uint32_t command) {
+        Frame frame;
+        frame.isRequest = true;
+        frame.data.setByte((uint8_t)MessageType::RequestValue);
+        frame.data.setValue(command);
+        return frame;
+    }
+    static Frame requestString(uint32_t command) {
+        Frame frame;
+        frame.isRequest = true;
+        frame.data.setByte((uint8_t)MessageType::RequestString);
+        frame.data.setValue(command);
+        return frame;
+    }
+    static Frame sendValue(uint32_t command, int32_t value) {
+        Frame frame;
+        frame.data.setByte((uint8_t)MessageType::SendValue);
+        frame.data.setCommand(command);
+        frame.data.setValue(value);
+        return frame;
+    }
+    static Frame sendString(uint32_t command, TotemBUSProtocol::String string) {
+        Frame frame;
+        frame.data.setByte((uint8_t)MessageType::SendString);
+        frame.data.setCommand(command);
+        frame.data.setValue(string);
         return frame;
     }
     static Frame ping(uint8_t data = 0) {
@@ -247,6 +279,10 @@ public:
             case MessageType::Subscribe:
             case MessageType::ResponseOk:
             case MessageType::ResponseFail:
+            case MessageType::SendValue:
+            case MessageType::SendString:
+            case MessageType::RequestValue:
+            case MessageType::RequestString:
                 break;
             default:
                 message.type = MessageType::Undefined;
