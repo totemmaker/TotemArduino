@@ -29,11 +29,20 @@ public:
     virtual void onServiceReceive(uint32_t id, uint8_t *data, uint8_t len) = 0;
 };
 
-class TotemCANService : TotemCANbus {
+class TotemCANService : protected TotemCANbus {
 public:
-    static BLEUUID TOTEM_CAN_SERVICE;
-    static BLEUUID TOTEM_CAN_TX;
-    static BLEUUID TOTEM_CAN_RX;
+    static const BLEUUID TOTEM_CAN_SERVICE() {
+        static const BLEUUID uuid = std::string("bae50001-a471-446a-bc43-4b0a60512636");
+        return uuid;
+    }
+    static const BLEUUID TOTEM_CAN_TX() {
+        static const BLEUUID uuid = std::string("bae50002-a471-446a-bc43-4b0a60512636");
+        return uuid;
+    }
+    static const BLEUUID TOTEM_CAN_RX() {
+        static const BLEUUID uuid = std::string("bae50003-a471-446a-bc43-4b0a60512636");
+        return uuid;
+    }
 private:
     BLERemoteCharacteristic *tx_char = nullptr;
     BLERemoteCharacteristic *rx_char = nullptr;
@@ -42,18 +51,35 @@ private:
     // uint8_t _buffer[250];
     // ByteBuffer txBuffer;
     TotemCANServiceReceiver &receiver;
-    static TotemCANService *instance;
+    TotemCANService *next = nullptr;
+    static TotemCANService *&getInstanceList() {
+        static TotemCANService *list = nullptr;
+        return list;
+    }
 public:
     TotemCANService(BLEClient *&client, TotemCANServiceReceiver &receiver) : 
-    client(client), /*txBuffer(_buffer, sizeof(_buffer)),*/ receiver(receiver) 
-    {
-        instance = this;
+    client(client), /*txBuffer(_buffer, sizeof(_buffer)),*/ receiver(receiver) {
+        // Add class object to the list
+        this->next = getInstanceList();
+        getInstanceList() = this;
+    }
+    ~TotemCANService() {
+        // Remove class object from the list
+        auto list = getInstanceList();
+        if (list == this) getInstanceList() = list->next;
+        else {
+            TotemCANService *item = list;
+            while (item->next) {
+                if (item->next == this) { item->next = item->next->next; break; }
+                item = item->next;
+            }
+        }
     }
     bool initService() {
-        BLERemoteService *service = client->getService(TOTEM_CAN_SERVICE);
+        BLERemoteService *service = client->getService(TOTEM_CAN_SERVICE());
         if (service == nullptr) return false;
-        tx_char = service->getCharacteristic(TOTEM_CAN_TX);
-        rx_char = service->getCharacteristic(TOTEM_CAN_RX);
+        tx_char = service->getCharacteristic(TOTEM_CAN_TX());
+        rx_char = service->getCharacteristic(TOTEM_CAN_RX());
         if (tx_char == nullptr || rx_char == nullptr) return false;
         rx_char->registerForNotify(TotemCANService::onDataReceive, true);
         
@@ -70,10 +96,15 @@ public:
 private:
     // Bluetooth received data
     static void onDataReceive(BLERemoteCharacteristic* pBLERemoteCharacteristic, uint8_t* pData, size_t length, bool isNotify) {
-        if (instance == nullptr) return;
-        if (instance->rx_char != pBLERemoteCharacteristic) return;
+        // Find instance in the list
+        TotemCANService *item = getInstanceList();
+        while (item) {
+            if (item->rx_char == pBLERemoteCharacteristic) { break; }
+            item = item->next;
+        }
+        if (item == nullptr) return;
         // Pass received data to TotemCANbus
-        instance->processReceivedData(pData, length);
+        item->processReceivedData(pData, length);
     }
     // TotemCANbus request max length of packet
     int getPacketLength() override {
