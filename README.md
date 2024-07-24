@@ -2,7 +2,7 @@
 
 Single Arduino library containing header files for external control of Totem products.
 
-```arduino
+```c++
 // Control over BLE
 #include <TotemBLE.h>              // Discover Totem boards (scan)
 #include <TotemMiniControlBoard.h> // Connect Mini Control Board
