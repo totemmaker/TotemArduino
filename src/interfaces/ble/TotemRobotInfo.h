@@ -59,9 +59,25 @@ public:
         }
         ready |= 0x1;
     }
+    void setManufacturerData(String manufData) {
+        // Read manufacturer data from advertisement
+        if (!manufData.isEmpty()) {
+            if (manufData.length() == 2+sizeof(advData)-1) {
+                memcpy(&(advData), &(manufData.c_str()[2]), sizeof(advData)-1);
+                advData.number = 3;
+            }
+            else if (manufData.length() == 2+sizeof(advData))
+                memcpy((&advData), &(manufData.c_str()[2]), sizeof(advData));
+        }
+        ready |= 0x1;
+    }
 
     void setName(std::string name) {
         this->name = String(name.c_str());
+        ready |= 0x2;
+    }
+    void setName(String name) {
+        this->name = name;
         ready |= 0x2;
     }
 

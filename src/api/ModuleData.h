@@ -49,11 +49,11 @@ struct ModuleData {
         return ptr != nullptr;
     }
     template <typename Type>
-    bool getData(Type **data, int32_t &len) {
+    bool getData(Type **data, int &len) {
         return getData<Type>(*data, len);
     }
     template <typename Type>
-    bool getData(Type *&data, int32_t &len) {
+    bool getData(Type *&data, int &len) {
         data = reinterpret_cast<Type*>(ptr);
         len = (ptr == nullptr) ? 0 : value;
         return ptr != nullptr;

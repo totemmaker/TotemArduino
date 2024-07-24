@@ -31,7 +31,6 @@ using RobotReceiver = void (*)(TotemRobot robot);
 namespace TotemLib {
 
 class InterfaceBLE : BLEAdvertisedDeviceCallbacks, BLEClientCallbacks {
-    BLEUUID advertisingService = std::string("bae50001-a471-446a-bc43-4b0a60512636");
     BLEScan *scanner = nullptr;
     bool scanActive = false;
     bool mainTask = false;
@@ -208,6 +207,7 @@ private:
         }
     }
     void onResult(BLEAdvertisedDevice advertisedDevice) override {
+        static const BLEUUID advertisingService("bae50001-a471-446a-bc43-4b0a60512636");
         TotemRobotInfo **robot = nullptr;
         // Look if device is already on the list
         for (auto &r : robotInfoPool) {

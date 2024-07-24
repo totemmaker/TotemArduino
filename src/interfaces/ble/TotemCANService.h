@@ -32,15 +32,15 @@ public:
 class TotemCANService : protected TotemCANbus {
 public:
     static const BLEUUID TOTEM_CAN_SERVICE() {
-        static const BLEUUID uuid = std::string("bae50001-a471-446a-bc43-4b0a60512636");
+        static const BLEUUID uuid("bae50001-a471-446a-bc43-4b0a60512636");
         return uuid;
     }
     static const BLEUUID TOTEM_CAN_TX() {
-        static const BLEUUID uuid = std::string("bae50002-a471-446a-bc43-4b0a60512636");
+        static const BLEUUID uuid("bae50002-a471-446a-bc43-4b0a60512636");
         return uuid;
     }
     static const BLEUUID TOTEM_CAN_RX() {
-        static const BLEUUID uuid = std::string("bae50003-a471-446a-bc43-4b0a60512636");
+        static const BLEUUID uuid("bae50003-a471-446a-bc43-4b0a60512636");
         return uuid;
     }
 private:

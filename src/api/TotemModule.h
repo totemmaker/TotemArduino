@@ -20,6 +20,7 @@
 #define LIB_TOTEM_SRC_API_TOTEMMODULE
 
 #include <stdint.h>
+#include <string>
 
 #include "lib/ModuleControl.h"
 #include "api/ModuleData.h"

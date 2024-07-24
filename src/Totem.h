@@ -45,8 +45,8 @@ public:
 
 _TotemClass& _getTotemInstance();
 // Workaround for compiling on X4, until Totem.BLE is refactored
-#define TotemModule TotemLib::TotemModule
-#define ModuleData TotemLib::ModuleData
+using TotemModule = TotemLib::TotemModule;
+using ModuleData = TotemLib::ModuleData;
 
 #endif // ARDUINO_ARCH_ESP32
 
