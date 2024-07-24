@@ -22,7 +22,7 @@
 #include <Arduino.h>
 
 #ifndef IGNORE_TOTEM_H_WARNING
-#pragma GCC warning "Totem.h is deprecated. Use: #include <TotemLabBoard.h>"
+#pragma GCC warning "Totem.h is deprecated. Use: #include <TotemBLE.h> or #include <TotemLabBoard.h>"
 #endif
 #include "TotemLabBoard.h"
 #define LB _getLabBoardInstance()
